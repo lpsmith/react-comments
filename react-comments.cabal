@@ -1,0 +1,61 @@
+Name:                react-comments
+Version:             0.0
+Synopsis:            An implementation of Facebook React's tutorial
+Description:
+    An implementation of Facebook React's tutorial,  using HTML5 server-sent
+    event streams and backed by snap-1.0
+License:             BSD3
+Author:              Leon P Smith
+Maintainer:          leon@melding-monads.com
+Stability:           Experimental
+Category:            Web
+Build-type:          Simple
+Cabal-version:       >=1.2
+
+Flag development
+  Description: Whether to build the server in development (interpreted) mode
+  Default: False
+
+Executable react-comments
+  hs-source-dirs: src
+  main-is: Main.hs
+
+  Build-depends:
+    base                      >= 4.4     && < 5,
+    blaze-builder,
+    blaze-textual,
+    bytestring                >= 0.9.1   && < 0.11,
+    containers,
+    io-streams,
+--  heist                     >= 1.0,
+    json-builder,
+    lens                      >= 3.7.6   && < 4.7,
+    linux-inotify,
+    mtl                       >= 2       && < 3,
+    safe,
+    snap                      >= 1.0,
+    snap-core                 >= 1.0,
+    snap-loader-static        >= 1.0,
+    snap-server               >= 1.0,
+    split-tchan,
+    stm,
+    text                      >= 0.11    && < 1.3,
+    time                      >= 1.1     && < 1.5,
+    xmlhtml                   >= 0.1
+
+
+
+  if flag(development)
+    build-depends:
+      snap-loader-dynamic == 0.10.*
+    cpp-options: -DDEVELOPMENT
+    -- In development mode, speed is already going to suffer, so skip
+    -- the fancy optimization flags.  Additionally, disable all
+    -- warnings.  The hint library doesn't give an option to execute
+    -- compiled code when there were also warnings, so disabling
+    -- warnings allows quicker workflow.
+    ghc-options: -threaded -w
+  else
+    ghc-options: -threaded -Wall -fwarn-tabs -funbox-strict-fields -O2
+                 -fno-warn-orphans -fno-warn-unused-do-bind
+                 -fno-warn-name-shadowing
