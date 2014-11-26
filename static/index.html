@@ -5,6 +5,14 @@
     <script src="JSXTransformer-0.12.1.js"></script>
     <script src="jquery-1.10.0.min.js"></script>
     <script src="showdown.min.js"></script>
+    <style type="text/css">
+      .status-offline { background: url(/media/status.png) no-repeat;
+                        width: 24px; height: 24px;
+                        background-position: 0 0; }
+      .status-online  { background: url(/media/status.png) no-repeat;
+                        width: 24px; height: 24px;
+                        background-position: 0 -25px; }
+    </style>
 
   </head>
   <body>
@@ -70,6 +78,9 @@ var CommentForm = React.createClass({
   }
 });
 var CommentBox = React.createClass({
+  getInitialState: function() {
+    return {data: [], status: "status-offline"};
+  },
   handleCommentSubmit: function(comment) {
     $.ajax({
       url: this.props.url,
@@ -85,27 +96,35 @@ var CommentBox = React.createClass({
     });
     // TODO: submit to the server and refresh the list
   },
-   getInitialState: function() {
-    return {data: []};
-  },
   componentDidMount: function() {
-    var parent = this;
+    var commentbox = this;
     var source = new EventSource (this.props.url);
     source.addEventListener("comment", function(e) {
       var comment = JSON.parse(e.data);
       comment.key = parseInt(e.lastEventId);
-      parent.state.data.push(comment);
-      parent.setState(parent.state);
+      commentbox.state.data.push(comment);
+      commentbox.setState(commentbox.state);
     });
     source.addEventListener("reload", function(e) {
       window.location = window.location;
       window.location.reload(true);
     });
+    source.onopen = function(e) {
+      commentbox.state.status="status-online";
+      commentbox.setState(commentbox.state);
+    };
+    source.onerror = function(e) {
+      commentbox.state.status="status-offline";
+      commentbox.setState(commentbox.state);
+    };
   },
   render: function() {
     return (
       <div className="commentBox">
-        <h1>Comments</h1>
+        <div style={{position: "relative"}}>
+        <div className={this.state.status} style={{position: "absolute"}} />
+        <h1 style={{marginLeft: "30px"}}>Comments</h1>
+        </div>
         <CommentList data={this.state.data}/>
         <CommentForm onCommentSubmit={this.handleCommentSubmit}/>
       </div>

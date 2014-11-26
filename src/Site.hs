@@ -101,7 +101,7 @@ getComments = do
                  . setResponseBody (go k cs rl) )
   where
     go k cs fileModified out = do
---       Streams.write (Just $ fromByteString "retry: 1000\n\n") out
+        Streams.write (Just $ flush) out
         loop (k+1)
       where
         loop k = do
